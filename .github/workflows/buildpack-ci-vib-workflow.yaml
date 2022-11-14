@@ -12,9 +12,9 @@ on: # rebuild any PRs and main branch changes
     branches:
       - main
     paths:
-      - .github/workflows
-      - .vib
-      - containerize/buildpack
+      - .github/workflows/**
+      - .vib/**
+      - containerize/buildpack/**
 permissions:
   issues: write
   pull-requests: write
