@@ -2,11 +2,19 @@ name: "[buildpacks] CI Pipeline"
 on: # rebuild any PRs and main branch changes
   pull_request_target:
     types:
+      - opened
+      - reopened
       - synchronize
       - labeled
     branches:
       - main
-      - bitnami:main
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows
+      - .vib
+      - containerize/buildpack
 permissions:
   issues: write
   pull-requests: write
@@ -37,6 +45,6 @@ jobs:
       - uses: vmware-labs/vmware-image-builder-action@0.4.11
         name: verify
         with:
-          pipeline: .vib/buildpack/vib-verify.json
+          pipeline: buildpacks/vib-verify.json
         env:
           VIB_ENV_SHA: ${{ steps.generate-short-sha.outputs.short-sha }}
