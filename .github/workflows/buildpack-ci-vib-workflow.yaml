@@ -42,7 +42,7 @@ jobs:
         name: generate-short-sha
         run: |
           echo "short-sha=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
-      - uses: vmware-labs/vmware-image-builder-action@0.4.11
+      - uses: vmware-labs/vmware-image-builder-action@0.4.12
         name: verify
         with:
           pipeline: buildpacks/vib-verify.json
