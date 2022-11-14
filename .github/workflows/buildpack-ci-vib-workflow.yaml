@@ -45,6 +45,6 @@ jobs:
       - uses: vmware-labs/vmware-image-builder-action@0.4.11
         name: verify
         with:
-          pipeline: ./vib/buildpacks/vib-verify.json
+          pipeline: buildpacks/vib-verify.json
         env:
           VIB_ENV_SHA: ${{ steps.generate-short-sha.outputs.short-sha }}
