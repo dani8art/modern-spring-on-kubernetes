@@ -2,7 +2,7 @@
   "context": {
     "credentials": [
       {
-        "url": "",
+        "url": "https://api.github.com/repos/dani8art/modern-spring-on-kubernetes",
         "authn": {
           "header": "Authorization",
           "token": "Bearer {VIB_ENV_GITHUB_TOKEN}"
