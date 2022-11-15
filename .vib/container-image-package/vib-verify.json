@@ -5,7 +5,7 @@
         "url": "",
         "authn": {
           "header": "Authorization",
-          "token": "Bearer {VIB_ENV_GITHUB_PAT}"
+          "token": "Bearer {VIB_ENV_GITHUB_TOKEN}"
         }
       }
     ]

@@ -1,18 +1,9 @@
 name: "[layers-dockerfile] CI Pipeline"
 on:
-  pull_request:
+  workflow_run:
+    workflows: ["[layers-dockerfile] VIB CI Prepare"]
     types:
-      - opened
-      - reopened
-      - synchronize
-      - labeled
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/**
-      - .vib/**
-      - containerize/layers-dockerfile/**
+      - completed
 permissions:
   issues: write
   pull-requests: write
@@ -23,48 +14,11 @@ env:
   VIB_ENV_TARGET_PLATFORM: ${{ secrets.VIB_ENV_TARGET_PLATFORM }}
   VIB_PUBLIC_URL: https://cp.bromelia.vmware.com
 jobs:
-  vib-prepare:
-    runs-on: ubuntu-latest
-    name: VIB Prepare
-    continue-on-error: false
-    steps:
-      - uses: actions/checkout@v3
-        name: checkout-repository
-        with:
-          # Full history is not required anymore
-          fetch-depth: 1
-          # labeled events trigger the event with the latest commit in main
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-
-      - id: set-up-jdk-17
-        name: set-up-jdk-17
-        uses: actions/setup-java@v3
-        with:
-          java-version: "17"
-          distribution: liberica
-          cache: maven
-
-      - id: prepare-jar
-        name: prepare-jar
-        run: |
-          cd containerize/layers-dockerfile
-          mvn -B clean package -DskipTests
-          cd ../ && tar -czf layers-dockerfile-with-artifacts.tar.gz ./layers-dockerfile/*
-
-      - name: upload-dockerfile-with-artifacts
-        id: upload-dockerfile-with-artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: layers-dockerfile-with-artifacts
-          path: containerize/layers-dockerfile-with-artifacts.tar.gz
-          if-no-files-found: error
-
   vib-verify:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     name: VIB Verify
     continue-on-error: false
-    needs: vib-prepare
     steps:
       - uses: actions/checkout@v3
         name: checkout-repository
@@ -84,12 +38,9 @@ jobs:
         id: prepare-dockerfile-with-artifacts-url
         env:
           GITHUB_TOKEN: ${{ secrets.GH_DANI8ART_PAT }}
-          RUN_ID: ${{ github.event.client_payload.run_id || github.event.inputs.run_id }}
+          PREVIOUS_WORKFLOW_ARTIFACTS_URL: ${{ github.event.workflow_run.artifacts_url }}
         run: |
-          gh api \
-            -H "Accept: application/vnd.github+json" \
-            /repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts \
-            > artifacts.json
+          curl -sSL -o artifacts.json -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GITHUB_TOKEN" $PREVIOUS_WORKFLOW_ARTIFACTS_URL
 
           jq -r '.' artifacts.json
 
@@ -105,4 +56,4 @@ jobs:
         env:
           VIB_ENV_SHA: ${{ steps.generate-short-sha.outputs.short-sha }}
           VIB_ENV_DOCKERFILE_WITH_ARTIFACTS_URL: ${{ steps.prepare-dockerfile-with-artifacts-url.outputs.url }}
-          VIB_ENV_GITHUB_PAT: ${{ secrets.GH_DANI8ART_PAT }}
+          VIB_ENV_GITHUB_TOKEN: ${{ secrets.GH_DANI8ART_PAT }}
