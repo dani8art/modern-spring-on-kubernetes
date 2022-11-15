@@ -1,10 +1,21 @@
 {
+  "context": {
+    "credentials": [
+      {
+        "url": "",
+        "authn": {
+          "header": "Authorization",
+          "token": "Bearer {VIB_ENV_GITHUB_PAT}"
+        }
+      }
+    ]
+  },
   "phases": {
     "package": {
       "context": {
         "resources": {
-          "url": "{SHA_ARCHIVE}",
-          "path": "/containerize/layers-dockerfile"
+          "url": "{VIB_ENV_DOCKERFILE_WITH_ARTIFACTS_URL}",
+          "path": "/"
         }
       },
       "actions": [

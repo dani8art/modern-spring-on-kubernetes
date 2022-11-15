@@ -38,13 +38,50 @@ jobs:
           # labeled events trigger the event with the latest commit in main
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+
       - id: generate-short-sha
         name: generate-short-sha
         run: |
           echo "short-sha=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
+
+      - id: prepare-jar
+        name: prepare-jar
+        run: ./mvnw -B package --file pom.xml
+
+      - name: upload-artifacts-with-artifacts
+        id: upload-artifacts-with-artifacts
+        needs: prepare-jar
+        uses: actions/upload-artifact@v3
+        with:
+          name: layers-dockerfile-with-artifacts
+          path: containerize/layers-dockerfile
+          if-no-files-found: error
+
+      - name: prepare-dockerfile-with-artifacts-url
+        id: prepare-dockerfile-with-artifacts-url
+        needs: upload-artifacts-with-artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GH_DANI8ART_PAT }}
+          RUN_ID: ${{ github.event.client_payload.run_id || github.event.inputs.run_id }}
+        run: |
+          gh api \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ env.GITHUB_REPOSITORY }}/actions/runs/${{ env.RUN_ID }}/artifacts \
+            > artifacts.json
+
+          jq -r '.' artifacts.json
+
+          ARTIFACT_URL="$(jq -r '.artifacts[] | select(.name == "layers-dockerfile-with-artifacts") | .archive_download_url' artifacts.json)"
+
+          echo "url=${ARTIFACT_URL}"
+          echo "url=${ARTIFACT_URL}" >> $GITHUB_OUTPUT
+
       - uses: vmware-labs/vmware-image-builder-action@0.4.12
         name: verify
+        needs: [generate-short-sha, prepare-dockerfile-with-artifacts-url]
         with:
           pipeline: container-image-package/vib-verify.json
         env:
           VIB_ENV_SHA: ${{ steps.generate-short-sha.outputs.short-sha }}
+          VIB_ENV_DOCKERFILE_WITH_ARTIFACTS_URL: ${{ steps.prepare-dockerfile-with-artifacts-url.outputs.url }}
+          VIB_ENV_GITHUB_PAT: ${{ secrets.GH_DANI8ART_PAT }}
