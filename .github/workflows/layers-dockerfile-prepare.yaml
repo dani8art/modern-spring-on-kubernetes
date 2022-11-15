@@ -1,4 +1,4 @@
-name: "[layers-dockerfile] VIB CI Prepare"
+name: "VIB CI Prepare"
 on:
   pull_request:
     types:
