@@ -55,7 +55,7 @@ jobs:
         run: |
           cd containerize/layers-dockerfile
           mvn -B clean package -DskipTests
-          tar -czf layers-dockerfile-with-artifacts.tar.gz .
+          cd ../ && tar -czf layers-dockerfile-with-artifacts.tar.gz ./layers-dockerfile/*
 
       - name: upload-dockerfile-with-artifacts
         id: upload-dockerfile-with-artifacts
