@@ -46,9 +46,9 @@ jobs:
         name: prepare-jar
         run: ./mvnw -B package --file pom.xml
 
-      - name: upload-artifacts-with-artifacts
-        id: upload-artifacts-with-artifacts
-        needs: prepare-jar
+      - name: upload-dockerfile-with-artifacts
+        id: upload-dockerfile-with-artifacts
+        needs: [prepare-jar]
         uses: actions/upload-artifact@v3
         with:
           name: layers-dockerfile-with-artifacts
@@ -57,7 +57,7 @@ jobs:
 
       - name: prepare-dockerfile-with-artifacts-url
         id: prepare-dockerfile-with-artifacts-url
-        needs: upload-artifacts-with-artifacts
+        needs: [upload-dockerfile-with-artifacts]
         env:
           GH_TOKEN: ${{ secrets.GH_DANI8ART_PAT }}
           RUN_ID: ${{ github.event.client_payload.run_id || github.event.inputs.run_id }}
