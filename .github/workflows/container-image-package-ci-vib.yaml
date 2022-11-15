@@ -68,7 +68,7 @@ jobs:
       - name: prepare-dockerfile-with-artifacts-url
         id: prepare-dockerfile-with-artifacts-url
         env:
-          GH_TOKEN: ${{ secrets.GH_DANI8ART_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GH_DANI8ART_PAT }}
           RUN_ID: ${{ github.event.client_payload.run_id || github.event.inputs.run_id }}
         run: |
           gh api \
