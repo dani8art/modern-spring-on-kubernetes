@@ -1,13 +1,11 @@
 name: "[layers-dockerfile] CI Pipeline"
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
       - reopened
       - synchronize
       - labeled
-    branches:
-      - main
   push:
     branches:
       - main
