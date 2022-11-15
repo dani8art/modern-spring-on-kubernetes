@@ -44,7 +44,7 @@ jobs:
 
       - id: prepare-jar
         name: prepare-jar
-        run: cd containerize/layers-dockerfile && ./mvnw -B clean package -DskipTests
+        run: cd containerize/layers-dockerfile && mvn -B clean package -DskipTests
 
       - name: upload-dockerfile-with-artifacts
         id: upload-dockerfile-with-artifacts
