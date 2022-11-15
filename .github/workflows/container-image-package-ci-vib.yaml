@@ -43,8 +43,6 @@ jobs:
         run: |
           curl -sSL -o artifacts.json -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GITHUB_TOKEN" $PREVIOUS_WORKFLOW_ARTIFACTS_URL
 
-          jq -r '.' artifacts.json
-
           ARTIFACT_URL="$(jq -r '.artifacts[] | select(.name == "layers-dockerfile-with-artifacts") | .archive_download_url' artifacts.json)"
 
           echo "url=${ARTIFACT_URL}"
