@@ -1,20 +1,9 @@
 name: "[layers-dockerfile] CI Pipeline"
 on:
-  pull_request_target:
+  workflow_run:
+    workflows: ["[layers-dockerfile] VIB CI Prepare"]
     types:
-      - opened
-      - reopened
-      - synchronize
-      - labeled
-    branches:
-      - main
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/**
-      - .vib/**
-      - containerize/layers-dockerfile/**
+      - completed
 permissions:
   issues: write
   pull-requests: write
@@ -26,6 +15,7 @@ env:
   VIB_PUBLIC_URL: https://cp.bromelia.vmware.com
 jobs:
   vib-verify:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     name: VIB Verify
     continue-on-error: false
@@ -38,13 +28,32 @@ jobs:
           # labeled events trigger the event with the latest commit in main
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+
       - id: generate-short-sha
         name: generate-short-sha
         run: |
           echo "short-sha=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
+
+      - name: prepare-dockerfile-with-artifacts-url
+        id: prepare-dockerfile-with-artifacts-url
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_DANI8ART_PAT }}
+          PREVIOUS_WORKFLOW_ARTIFACTS_URL: ${{ github.event.workflow_run.artifacts_url }}
+        run: |
+          curl -sSL -o artifacts.json -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GITHUB_TOKEN" $PREVIOUS_WORKFLOW_ARTIFACTS_URL
+
+          jq -r '.' artifacts.json
+
+          ARTIFACT_URL="$(jq -r '.artifacts[] | select(.name == "layers-dockerfile-with-artifacts") | .archive_download_url' artifacts.json)"
+
+          echo "url=${ARTIFACT_URL}"
+          echo "url=${ARTIFACT_URL}" >> $GITHUB_OUTPUT
+
       - uses: vmware-labs/vmware-image-builder-action@0.4.12
         name: verify
         with:
           pipeline: container-image-package/vib-verify.json
         env:
           VIB_ENV_SHA: ${{ steps.generate-short-sha.outputs.short-sha }}
+          VIB_ENV_DOCKERFILE_WITH_ARTIFACTS_URL: ${{ steps.prepare-dockerfile-with-artifacts-url.outputs.url }}
+          VIB_ENV_GITHUB_TOKEN: ${{ secrets.GH_DANI8ART_PAT }}
