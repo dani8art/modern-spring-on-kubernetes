@@ -52,14 +52,17 @@ jobs:
 
       - id: prepare-jar
         name: prepare-jar
-        run: cd containerize/layers-dockerfile && mvn -B clean package -DskipTests
+        run: |
+          cd containerize/layers-dockerfile
+          mvn -B clean package -DskipTests
+          tar -czf layers-dockerfile-with-artifacts.tar.gz .
 
       - name: upload-dockerfile-with-artifacts
         id: upload-dockerfile-with-artifacts
         uses: actions/upload-artifact@v3
         with:
           name: layers-dockerfile-with-artifacts
-          path: containerize/layers-dockerfile
+          path: containerize/layers-dockerfile/layers-dockerfile-with-artifacts.tar.gz
           if-no-files-found: error
 
       - name: prepare-dockerfile-with-artifacts-url
@@ -70,7 +73,7 @@ jobs:
         run: |
           gh api \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ env.GITHUB_REPOSITORY }}/actions/runs/${{ env.RUN_ID }}/artifacts \
+            /repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/artifacts \
             > artifacts.json
 
           jq -r '.' artifacts.json
