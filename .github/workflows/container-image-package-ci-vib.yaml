@@ -62,7 +62,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: layers-dockerfile-with-artifacts
-          path: containerize/layers-dockerfile/layers-dockerfile-with-artifacts.tar.gz
+          path: containerize/layers-dockerfile-with-artifacts.tar.gz
           if-no-files-found: error
 
       - name: prepare-dockerfile-with-artifacts-url
