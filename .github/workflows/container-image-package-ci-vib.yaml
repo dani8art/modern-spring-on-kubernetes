@@ -23,9 +23,9 @@ env:
   VIB_ENV_TARGET_PLATFORM: ${{ secrets.VIB_ENV_TARGET_PLATFORM }}
   VIB_PUBLIC_URL: https://cp.bromelia.vmware.com
 jobs:
-  vib-verify:
+  vib-prepare:
     runs-on: ubuntu-latest
-    name: VIB Verify
+    name: VIB Prepare
     continue-on-error: false
     steps:
       - uses: actions/checkout@v3
@@ -36,11 +36,6 @@ jobs:
           # labeled events trigger the event with the latest commit in main
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-
-      - id: generate-short-sha
-        name: generate-short-sha
-        run: |
-          echo "short-sha=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
 
       - id: set-up-jdk-17
         name: set-up-jdk-17
@@ -64,6 +59,26 @@ jobs:
           name: layers-dockerfile-with-artifacts
           path: containerize/layers-dockerfile-with-artifacts.tar.gz
           if-no-files-found: error
+
+  vib-verify:
+    runs-on: ubuntu-latest
+    name: VIB Verify
+    continue-on-error: false
+    needs: vib-prepare
+    steps:
+      - uses: actions/checkout@v3
+        name: checkout-repository
+        with:
+          # Full history is not required anymore
+          fetch-depth: 1
+          # labeled events trigger the event with the latest commit in main
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - id: generate-short-sha
+        name: generate-short-sha
+        run: |
+          echo "short-sha=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
 
       - name: prepare-dockerfile-with-artifacts-url
         id: prepare-dockerfile-with-artifacts-url
