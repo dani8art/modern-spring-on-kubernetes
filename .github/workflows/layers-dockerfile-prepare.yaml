@@ -1,0 +1,54 @@
+name: "[layers-dockerfile] VIB CI Prepare"
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/**
+      - .vib/**
+      - containerize/layers-dockerfile/**
+permissions:
+  issues: write
+  pull-requests: write
+  statuses: write
+jobs:
+  vib-prepare:
+    runs-on: ubuntu-latest
+    name: Prepare VIB Package Resources
+    continue-on-error: false
+    steps:
+      - uses: actions/checkout@v3
+        name: checkout-repository
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - id: set-up-jdk-17
+        name: set-up-jdk-17
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: liberica
+          cache: maven
+
+      - id: prepare-jar
+        name: prepare-jar
+        run: |
+          cd containerize/layers-dockerfile
+          mvn -B clean package -DskipTests
+          cd ../ && tar -czf layers-dockerfile-with-artifacts.tar.gz ./layers-dockerfile/*
+
+      - name: upload-dockerfile-with-artifacts
+        id: upload-dockerfile-with-artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: layers-dockerfile-with-artifacts
+          path: containerize/layers-dockerfile-with-artifacts.tar.gz
+          if-no-files-found: error
