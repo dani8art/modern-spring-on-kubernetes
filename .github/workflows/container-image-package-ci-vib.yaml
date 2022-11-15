@@ -48,7 +48,6 @@ jobs:
 
       - name: upload-dockerfile-with-artifacts
         id: upload-dockerfile-with-artifacts
-        needs: [prepare-jar]
         uses: actions/upload-artifact@v3
         with:
           name: layers-dockerfile-with-artifacts
@@ -57,7 +56,6 @@ jobs:
 
       - name: prepare-dockerfile-with-artifacts-url
         id: prepare-dockerfile-with-artifacts-url
-        needs: [upload-dockerfile-with-artifacts]
         env:
           GH_TOKEN: ${{ secrets.GH_DANI8ART_PAT }}
           RUN_ID: ${{ github.event.client_payload.run_id || github.event.inputs.run_id }}
@@ -76,7 +74,6 @@ jobs:
 
       - uses: vmware-labs/vmware-image-builder-action@0.4.12
         name: verify
-        needs: [generate-short-sha, prepare-dockerfile-with-artifacts-url]
         with:
           pipeline: container-image-package/vib-verify.json
         env:
