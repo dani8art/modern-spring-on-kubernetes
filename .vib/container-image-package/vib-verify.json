@@ -4,22 +4,25 @@
       "context": {
         "resources": {
           "url": "{SHA_ARCHIVE}",
-          "path": "/containerize/buildpack"
+          "path": "/containerize/layers-dockerfile"
         }
       },
       "actions": [
         {
-          "action_id": "buildpacks",
+          "action_id": "container-image-package",
           "params": {
             "application": {
               "details": {
                 "name": "modern-spring-on-kubernetes",
-                "tag": "buildpacks-{VIB_ENV_SHA}"
+                "tag": "container-image-package-{VIB_ENV_SHA}"
               }
-            },
-            "env": {
-              "BP_JVM_VERSION": "17.*"
             }
+          }
+        },
+        {
+          "action_id": "container-image-lint",
+          "params": {
+            "threshold": "error"
           }
         }
       ]
