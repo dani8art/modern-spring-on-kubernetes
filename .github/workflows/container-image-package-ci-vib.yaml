@@ -1,7 +1,7 @@
 name: "[layers-dockerfile] CI Pipeline"
 on:
   workflow_run:
-    workflows: ["[layers-dockerfile] VIB CI Prepare"]
+    workflows: ["\[layers-dockerfile\] VIB CI Prepare"]
     types:
       - completed
 permissions:
