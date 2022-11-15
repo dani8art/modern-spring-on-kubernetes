@@ -44,7 +44,7 @@ jobs:
 
       - id: prepare-jar
         name: prepare-jar
-        run: ./mvnw -B package --file pom.xml
+        run: cd containerize/layers-dockerfile && ./mvnw -B clean package -DskipTests
 
       - name: upload-dockerfile-with-artifacts
         id: upload-dockerfile-with-artifacts
